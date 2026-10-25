@@ -1,0 +1,16 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Ferramentas locais
+.claude/
+logs/
+*.log
+.vscode/

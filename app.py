@@ -13,6 +13,7 @@ from flask import Flask, jsonify, render_template, request
 
 import config
 import kpis
+import pagamentos
 
 app = Flask(__name__)
 log = logging.getLogger("relatorio")
@@ -21,24 +22,24 @@ _cache = {}
 _trava = threading.Lock()
 
 
-def _kpis_com_cache(ano, mes, forcar):
-    chave = (ano, mes)
+def _com_cache(calculo, ano, mes, forcar):
+    chave = (calculo.__module__, ano, mes)
     agora = time.time()
     with _trava:
         item = _cache.get(chave)
         if item and not forcar and agora - item[0] < config.CACHE_MINUTOS * 60:
             return item[1]
-    dados = kpis.calcular(ano, mes)
+    dados = calculo(ano, mes)
     with _trava:
         _cache[chave] = (agora, dados)
     return dados
 
 
-@app.get("/")
-def index():
+def _pagina(template, aba):
     hoje = date.today()
     return render_template(
-        "index.html",
+        template,
+        aba=aba,
         loja=config.LOJA_NOME,
         gerente=config.GERENTE_NOME,
         ano_atual=hoje.year,
@@ -46,8 +47,17 @@ def index():
     )
 
 
-@app.get("/api/kpis")
-def api_kpis():
+@app.get("/")
+def index():
+    return _pagina("index.html", "visao")
+
+
+@app.get("/pagamentos")
+def pagina_pagamentos():
+    return _pagina("pagamentos.html", "pagamentos")
+
+
+def _responder(calculo):
     hoje = date.today()
     try:
         ano = int(request.args.get("ano", hoje.year))
@@ -58,10 +68,20 @@ def api_kpis():
         return jsonify(erro="Mês ou ano inválido."), 400
 
     try:
-        return jsonify(_kpis_com_cache(ano, mes, request.args.get("atualizar") == "1"))
+        return jsonify(_com_cache(calculo, ano, mes, request.args.get("atualizar") == "1"))
     except Exception:
         log.exception("Falha ao consultar o banco")
         return jsonify(erro="Não foi possível consultar o banco da loja. Tente novamente em instantes."), 502
+
+
+@app.get("/api/kpis")
+def api_kpis():
+    return _responder(kpis.calcular)
+
+
+@app.get("/api/pagamentos")
+def api_pagamentos():
+    return _responder(pagamentos.calcular)
 
 
 if __name__ == "__main__":

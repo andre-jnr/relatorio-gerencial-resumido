@@ -22,7 +22,7 @@ python app.py --dev    # desenvolvimento (Flask com recarga automática, só loc
 
 ## Período
 
-O filtro escolhe **mês** e **ano**.
+O filtro escolhe **mês** e **ano**, e o período escolhido vale para as duas abas (Visão geral e Pagamentos).
 
 | Mês selecionado | Dados considerados |
 | --- | --- |
@@ -75,15 +75,45 @@ Cada mês fica 5 minutos em cache (`CACHE_MINUTOS`). O botão de atualizar consu
 Todas as contas a pagar ignoram títulos excluídos (`Data_Exclusao`) e as contas contábeis listadas em `CONTAS_EXCLUIDAS`, com as mesmas regras do Painel Gerencial.
 A comparação dos nomes ignora acentos, maiúsculas e espaços.
 
+## Aba Pagamentos
+
+Mostra as contas pagas no período numa matriz **plano de contas → grupo → conta contábil**, comparada com o mesmo intervalo do mês anterior. O total é igual ao card "Contas pagas" da Visão geral.
+
+| Mês selecionado | Comparação |
+| --- | --- |
+| Mês fechado | Mês inteiro × mês anterior inteiro |
+| Mês em andamento | Dia 1 até D-1 × mês anterior do dia 1 até o mesmo dia |
+
+- No topo ficam o pago no período, o pago no mês anterior, a variação e o maior grupo. Abaixo, uma barra mostra quanto cada plano de contas representa do total.
+- As colunas da matriz são: mês anterior, mês selecionado, diferença em R$, variação em % e participação no total. Clique no título de uma coluna para ordenar por ela. Aumento de pagamento aparece em vermelho e redução em verde.
+- Clicar na seta de uma **conta** mostra os lançamentos dela: fornecedor, documento, emissão, vencimento, pagamento, origem (mesmo mês, meses anteriores ou transferência) e valor.
+- A busca procura em conta, grupo, plano de contas e fornecedor, sem diferenciar acentos nem maiúsculas.
+- A chave **Plano de contas** tira esse nível da matriz, que passa a ser grupo → conta.
+
+### Planilha do plano de contas
+
+O plano e o grupo de cada conta vêm de `dados/classificacao_pagamentos.xlsx`, uma cópia da planilha do Painel Gerencial. O caminho pode ser trocado em `PLANILHA_CLASSIFICACAO`.
+
+- As colunas usadas são `PAGAMENTOS` (nome da conta contábil), `GRUPO` e `PLANO DE CONTAS`.
+- A planilha é relida sozinha quando o arquivo muda, sem reiniciar o servidor.
+- Conta paga que não estiver na planilha aparece em **Pagamentos não classificados**, marcada como "sem classificação". Para corrigir, inclua a conta na planilha.
+- A planilha tem dados internos, então fica fora do Git (`dados/*.xlsx`). Ao clonar o projeto, copie a planilha para `dados/`.
+
 ## Estrutura
 
 ```
-app.py              servidor Flask (página + /api/kpis?ano=&mes=)
-kpis.py             consultas e cálculo dos KPIs
+app.py              servidor Flask (páginas + /api/kpis e /api/pagamentos ?ano=&mes=)
+kpis.py             consultas e cálculo dos KPIs (Visão geral)
+pagamentos.py       consultas da aba Pagamentos (plano de contas e lançamentos)
+classificacao.py    leitura da planilha do plano de contas
 db.py               conexão somente leitura com o SQL Server
 config.py           leitura do .env
-templates/          página HTML
-static/css, js/     visual e lógica dos cards e filtros
+dados/              planilha do plano de contas (fora do Git)
+templates/          base.html (topo, abas, filtros) + uma página por aba
+static/js/comum.js  filtros, tema, formatação e carregamento compartilhados
+static/js/app.js    cards da Visão geral
+static/js/pagamentos.js  matriz da aba Pagamentos
+static/css/         style.css (geral) e pagamentos.css
 .env.example        variáveis necessárias (sem valores reais)
 Iniciar Relatorio.bat
 ```

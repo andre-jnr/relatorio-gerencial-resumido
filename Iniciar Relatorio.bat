@@ -15,7 +15,7 @@ if not exist ".env" (
   exit /b 1
 )
 
-python -c "import flask, waitress, pyodbc, dotenv" >nul 2>nul
+python -c "import flask, waitress, pyodbc, dotenv, openpyxl" >nul 2>nul
 if errorlevel 1 (
   echo Instalando dependencias pela primeira vez...
   python -m pip install -r requirements.txt

@@ -23,7 +23,7 @@ def _normalizar(texto):
     return texto.replace(" ", "")
 
 
-def _filtro_contas():
+def filtro_contas():
     """Trecho WHERE que tira as contas contábeis excluídas (precisa do alias cc)."""
     nomes = [_normalizar(n) for n in config.CONTAS_EXCLUIDAS]
     if not nomes:
@@ -35,7 +35,7 @@ def _filtro_contas():
     )
 
 
-def _dt(d):
+def dt(d):
     return datetime(d.year, d.month, d.day)
 
 
@@ -63,9 +63,9 @@ def periodo(ano, mes, hoje=None):
 
 
 def _consultar(conn, p):
-    contas_sql, contas_par = _filtro_contas()
+    contas_sql, contas_par = filtro_contas()
     cfops = ", ".join("?" for _ in config.TRANSF_CFOPS)
-    ini, corte, fim, prox_fim = (_dt(p[k]) for k in ("ini", "corte", "fim", "prox_fim"))
+    ini, corte, fim, prox_fim = (dt(p[k]) for k in ("ini", "corte", "fim", "prox_fim"))
 
     sql_vendas = "SELECT SUM(Valor_Final) FROM Venda WHERE Cancelada = 'N' AND Data >= ? AND Data < ?"
 
@@ -92,9 +92,9 @@ def _consultar(conn, p):
           AND cp.Data_Vencimento >= ? AND cp.Data_Vencimento < ?"""
 
     q = lambda sql, *par: db.valor(conn, sql, par)
-    dia = _dt(p["dia_anterior"]) if p["dia_anterior"] else corte
+    dia = dt(p["dia_anterior"]) if p["dia_anterior"] else corte
     # vencidas antes do mês selecionado (num mês futuro, só o que já venceu até hoje)
-    limite_anteriores = min(ini, _dt(date.today()))
+    limite_anteriores = min(ini, dt(date.today()))
     return {
         "venda_dia": q(sql_vendas, dia, corte),
         "vendas": q(sql_vendas, ini, corte),

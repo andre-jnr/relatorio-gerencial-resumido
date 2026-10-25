@@ -1,33 +1,8 @@
+// Aba Visão geral: cards de KPIs.
 (() => {
   'use strict';
 
-  const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho',
-    'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  const ANO_INICIAL = 2023;
-
-  const $ = (s) => document.querySelector(s);
-  const el = {
-    mes: $('#filtro-mes'), ano: $('#filtro-ano'), atualizar: $('#btn-atualizar'), tema: $('#btn-tema'),
-    conteudo: $('#conteudo'), status: $('#periodo-status'), texto: $('#periodo-texto'),
-    progresso: $('#periodo-progresso span'), hora: $('#atualizado'),
-  };
-
-  // ---------- Formatação ----------
-  const fmtInteiro = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
-  const fmtCentavos = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  const fmtPct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  const moeda = (v) => `<small>R$</small>${fmtInteiro.format(v)}`;
-  const moedaTexto = (v) => `R$ ${fmtInteiro.format(v)}`;
-  const pct = (v) => (v == null ? '—' : `${fmtPct.format(v)}<small style="margin-left:2px">%</small>`);
-
-  const data = (iso) => { const [a, m, d] = iso.split('-').map(Number); return new Date(a, m - 1, d); };
-  const ddmm = (iso) => data(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-  const diaSemana = (iso) => {
-    const s = data(iso).toLocaleDateString('pt-BR', { weekday: 'long' });
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  };
-  const escapar = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const { MESES, el, moeda, moedaTexto, centavos, pct, data, ddmm, diaSemana, linha } = Comum;
 
   // ---------- Ícones (traço 2px, 24x24) ----------
   const ICONES = {
@@ -51,7 +26,7 @@
 
   function card({ rotulo, valor, tipo = 'moeda', sub = '', ico, classes = '', barra = null }, i) {
     const html = tipo === 'pct' ? pct(valor) : moeda(valor);
-    const titulo = tipo === 'pct' ? '' : ` title="${fmtCentavos.format(valor)}"`;
+    const titulo = tipo === 'pct' ? '' : ` title="${centavos(valor)}"`;
     const largura = barra == null ? '' : `<div class="barra"><span style="width:${Math.max(0, Math.min(100, barra))}%"></span></div>`;
     return `
       <article class="card ${classes}" style="--i:${i}">
@@ -135,93 +110,24 @@
       return html;
     }).join('');
 
-    // faixa do período
-    const ROTULO = { aberto: 'Em andamento', fechado: 'Mês fechado', futuro: 'Mês futuro' };
-    el.status.textContent = ROTULO[p.status];
-    el.status.className = `selo selo--${p.status}`;
-    el.texto.innerHTML = `<b>${MESES[p.mes - 1]} de ${p.ano}</b> · ${temDias ? `dados de ${faixa}` : 'ainda sem dias fechados'} · ${p.dias_decorridos} de ${p.dias_mes} dias`;
-    el.progresso.style.width = `${(p.dias_decorridos / p.dias_mes) * 100}%`;
-    const hora = new Date(d.atualizado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    el.hora.textContent = `Consultado às ${hora}`;
+    Comum.faixa({
+      status: p.status,
+      html: `<b>${MESES[p.mes - 1]} de ${p.ano}</b> · ${temDias ? `dados de ${faixa}` : 'ainda sem dias fechados'} · ${p.dias_decorridos} de ${p.dias_mes} dias`,
+      diasDecorridos: p.dias_decorridos, diasMes: p.dias_mes, atualizadoEm: d.atualizado_em,
+    });
   }
 
   function esqueleto() {
     const bloco = (n) => `
       <section class="secao">
-        <div class="secao__cab"><span class="linha" style="width:180px;height:28px"></span></div>
+        <div class="secao__cab">${linha('180px', 28)}</div>
         <div class="grade">${Array.from({ length: n }, () => `
           <article class="card card--esqueleto">
-            <span class="linha" style="width:55%;height:12px"></span>
-            <span class="linha" style="width:75%;height:28px;margin-top:auto"></span>
-            <span class="linha" style="width:45%;height:10px"></span>
+            ${linha('55%', 12)}${linha('75%', 28, 'margin-top:10px')}${linha('45%', 10, 'margin-top:auto')}
           </article>`).join('')}</div>
       </section>`;
-    el.conteudo.innerHTML = [5, 4, 4, 5].map(bloco).join('');
+    return [5, 4, 4, 5].map(bloco).join('');
   }
 
-  function erro(msg) {
-    el.conteudo.innerHTML = `
-      <div class="aviso" role="alert">
-        <h2>Não foi possível carregar o relatório</h2>
-        <p>${escapar(msg)}</p>
-        <button type="button" id="btn-tentar">Tentar de novo</button>
-      </div>`;
-    $('#btn-tentar').addEventListener('click', () => carregar(true));
-    el.texto.textContent = 'Sem dados';
-  }
-
-  // ---------- Dados ----------
-  let pedidoAtual = 0;
-
-  async function carregar(forcar = false) {
-    const id = ++pedidoAtual;
-    const ano = el.ano.value, mes = el.mes.value;
-    if (!el.conteudo.children.length || forcar === 'filtro') esqueleto();
-    el.atualizar.classList.add('girando');
-    el.texto.textContent = 'Consultando o banco…';
-    try {
-      const qs = new URLSearchParams({ ano, mes, ...(forcar === true ? { atualizar: '1' } : {}) });
-      const resp = await fetch(`/api/kpis?${qs}`);
-      const json = await resp.json();
-      if (id !== pedidoAtual) return; // chegou uma resposta mais nova
-      if (!resp.ok) throw new Error(json.erro || 'Erro desconhecido.');
-      render(json);
-      salvar({ ano, mes });
-    } catch (e) {
-      if (id === pedidoAtual) erro(e.message || 'Falha de conexão com o servidor.');
-    } finally {
-      if (id === pedidoAtual) el.atualizar.classList.remove('girando');
-    }
-  }
-
-  // ---------- Filtros ----------
-  function salvar(v) { try { sessionStorage.setItem('periodo', JSON.stringify(v)); } catch (e) { /* opcional */ } }
-  function lerSalvo() { try { return JSON.parse(sessionStorage.getItem('periodo')); } catch (e) { return null; } }
-
-  function montarFiltros() {
-    const { anoAtual, mesAtual } = window.APP;
-    el.mes.innerHTML = MESES.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
-    const anos = [];
-    for (let a = anoAtual; a >= ANO_INICIAL; a--) anos.push(`<option value="${a}">${a}</option>`);
-    el.ano.innerHTML = anos.join('');
-    const salvo = lerSalvo();
-    el.mes.value = salvo?.mes || mesAtual;
-    el.ano.value = salvo?.ano || anoAtual;
-    el.mes.addEventListener('change', () => carregar('filtro'));
-    el.ano.addEventListener('change', () => carregar('filtro'));
-    el.atualizar.addEventListener('click', () => carregar(true));
-  }
-
-  // ---------- Tema ----------
-  el.tema.addEventListener('click', () => {
-    const escuroAgora = document.documentElement.dataset.theme
-      ? document.documentElement.dataset.theme === 'dark'
-      : matchMedia('(prefers-color-scheme: dark)').matches;
-    const novo = escuroAgora ? 'light' : 'dark';
-    document.documentElement.dataset.theme = novo;
-    try { localStorage.setItem('tema', novo); } catch (e) { /* opcional */ }
-  });
-
-  montarFiltros();
-  carregar();
+  Comum.iniciar({ endpoint: '/api/kpis', render, esqueleto });
 })();

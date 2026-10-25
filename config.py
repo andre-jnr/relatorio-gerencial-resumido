@@ -4,7 +4,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).resolve().parent / ".env", encoding="utf-8")
+RAIZ = Path(__file__).resolve().parent
+load_dotenv(RAIZ / ".env", encoding="utf-8")
 
 
 def _lista(nome):
@@ -26,3 +27,5 @@ LOJA_NOME = os.getenv("LOJA_NOME", "Morada do Sol")
 GERENTE_NOME = os.getenv("GERENTE_NOME", "")
 TRANSF_CFOPS = _lista("TRANSF_CFOPS") or ["5.152", "5.409", "5.557", "5.552"]
 CONTAS_EXCLUIDAS = _lista("CONTAS_EXCLUIDAS")
+# caminho relativo é a partir da pasta do projeto
+PLANILHA_CLASSIFICACAO = str(RAIZ / os.getenv("PLANILHA_CLASSIFICACAO", "dados/classificacao_pagamentos.xlsx"))

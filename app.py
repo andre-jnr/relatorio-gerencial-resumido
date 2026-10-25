@@ -1,9 +1,10 @@
 """Relatório gerencial da Morada do Sol (Lincoln).
 
-Desenvolvimento:  python app.py --dev
-Produção:         python app.py            (Waitress, acessível pela rede)
+Local:     python app.py              (só este computador; --dev liga a recarga automática)
+Servidor:  python app.py --producao   (Waitress em 0.0.0.0, acessível pela rede)
 """
 import logging
+import socket
 import sys
 import threading
 import time
@@ -149,12 +150,24 @@ def api_provisoes_copiar():
     return _alteracao(lambda: jsonify(provisoes.copiar_mes_anterior(*periodo)))
 
 
+PORTA_OCUPADA = 3  # código de saída usado por servidor/iniciar.ps1 para não ficar tentando de novo
+
+
+def porta_em_uso(porta):
+    with socket.socket() as s:
+        s.settimeout(1)
+        return s.connect_ex(("127.0.0.1", porta)) == 0
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    if "--dev" in sys.argv:
-        app.run(host="127.0.0.1", port=config.PORT, debug=True)
-    else:
+    if porta_em_uso(config.PORT):
+        print(f"ERRO: a porta {config.PORT} já está em uso.", file=sys.stderr)
+        sys.exit(PORTA_OCUPADA)
+    if "--producao" in sys.argv:
         from waitress import serve
 
-        log.info("Relatório gerencial em http://%s:%s", config.HOST, config.PORT)
-        serve(app, host=config.HOST, port=config.PORT, threads=8)
+        log.info("Escutando na rede: http://%s:%s", socket.gethostname(), config.PORT)
+        serve(app, host="0.0.0.0", port=config.PORT, threads=8)
+    else:
+        app.run(host="127.0.0.1", port=config.PORT, debug="--dev" in sys.argv)

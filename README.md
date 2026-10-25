@@ -4,21 +4,38 @@ Dashboard com os KPIs de receitas, resultado e pagamentos da loja Morada do Sol,
 Os dados são consultados ao vivo no SQL Server do SISMOURA, só com leitura.
 
 - **Porta:** 3005 (pode ser alterada pela variável `PORT` no `.env`)
-- **Stack:** Python 3 + Flask, servido pelo Waitress · pyodbc (ODBC Driver 17 for SQL Server)
+- **Stack:** Python 3.10+ e Flask, servido pelo Waitress no servidor. O banco é acessado pelo `mssql-python`, o driver oficial da Microsoft, que não exige instalar o ODBC Driver.
 
-## Como iniciar
+## Como iniciar (neste computador)
 
 1. Copie `.env.example` para `.env` e preencha a conexão com o banco.
 2. Dê dois cliques em **`Iniciar Relatorio.bat`**. Na primeira vez ele instala as dependências.
-3. Acesse `http://localhost:3005`. Outras máquinas da rede acessam por `http://NOME_DO_SERVIDOR:3005`.
+3. Acesse `http://localhost:3005`. Nesse modo, só este computador tem acesso.
 
 Pelo terminal:
 
 ```bash
 pip install -r requirements.txt
-python app.py          # produção (Waitress, 0.0.0.0:3005)
-python app.py --dev    # desenvolvimento (Flask com recarga automática, só localhost)
+python app.py              # local: só este computador
+python app.py --dev        # local, com recarga automática ao editar o código
+python app.py --producao   # servidor: Waitress em 0.0.0.0, acessível pela rede
 ```
+
+Se a porta já estiver em uso, o sistema não sobe e sai com o código 3.
+
+## Publicar no servidor (Windows)
+
+1. Copie a pasta do projeto para o servidor, incluindo `dados/classificacao_pagamentos.xlsx`, que fica fora do Git.
+2. Tenha o Python 3.10 ou mais novo instalado. No instalador do python.org, marque "Add python.exe to PATH".
+3. Crie o `.env` a partir do `.env.example`.
+4. Clique duas vezes em `servidor\instalar.bat` e confirme o pedido de administrador.
+
+O sistema sobe sozinho ao ligar o computador, pela tarefa agendada "Relatorio gerencial Lincoln (3005)", e reinicia se cair.
+O acesso fica em `http://NOME-DO-SERVIDOR:3005`, e o log em `logs\servidor.log`.
+
+- **Para atualizar:** copie os arquivos novos e rode o `instalar.bat` de novo. Não sobrescreva a pasta `dados/` do servidor, porque nela estão as provisões lançadas.
+- **Para remover:** rode `servidor\desinstalar.bat`. Ele não apaga dados.
+- **Backup:** inclua `dados/provisoes.db` no backup do servidor.
 
 ## Período
 
@@ -137,7 +154,9 @@ static/js/pagamentos.js  matriz da aba Pagamentos
 static/js/provisoes.js   formulário e lista da aba Provisões
 static/css/         style.css (geral), pagamentos.css e provisoes.css
 .env.example        variáveis necessárias (sem valores reais)
-Iniciar Relatorio.bat
+Iniciar Relatorio.bat    atalho para rodar neste computador
+servidor/           publicação no servidor Windows (config.ps1 é o único que muda entre sistemas)
+logs/               log do servidor (criado na instalação, fora do Git)
 ```
 
 ## Segurança

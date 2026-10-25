@@ -1,5 +1,5 @@
 flask>=3.0
 waitress>=3.0
-pyodbc>=5.1
+mssql-python>=1.16
 python-dotenv>=1.0
 openpyxl>=3.1

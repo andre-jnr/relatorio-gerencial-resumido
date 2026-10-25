@@ -12,14 +12,12 @@ def _lista(nome):
     return [x.strip() for x in os.getenv(nome, "").split(";") if x.strip()]
 
 
-DB_DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
 DB_SERVER = os.getenv("DB_SERVER", "")
 DB_DATABASE = os.getenv("DB_DATABASE", "")
 DB_USER = os.getenv("DB_USER", "")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_TIMEOUT = int(os.getenv("DB_TIMEOUT", "60"))
 
-HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "3005"))
 CACHE_MINUTOS = float(os.getenv("CACHE_MINUTOS", "5"))
 

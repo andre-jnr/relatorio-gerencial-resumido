@@ -17,3 +17,7 @@ logs/
 
 # Dados internos (planilha de classificação dos pagamentos)
 dados/*.xlsx
+
+# Provisões lançadas na tela (SQLite local)
+dados/*.db
+dados/*.db-journal

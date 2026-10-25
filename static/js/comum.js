@@ -114,6 +114,20 @@ window.Comum = (() => {
 
     montarFiltros(carregar);
     carregar();
+    return { periodo: () => ({ ano: Number(el.ano.value), mes: Number(el.mes.value) }) };
+  }
+
+  // chamada JSON que lança erro com a mensagem do servidor
+  async function api(url, opcoes = {}) {
+    const resp = await fetch(url, {
+      ...opcoes,
+      headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) },
+      body: opcoes.body ? JSON.stringify(opcoes.body) : undefined,
+    });
+    if (resp.status === 204) return null;
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(json.erro || 'Falha ao falar com o servidor.');
+    return json;
   }
 
   // bloco cinza de carregamento
@@ -121,6 +135,6 @@ window.Comum = (() => {
 
   return {
     MESES, el, moeda, moedaTexto, centavos, decimal, pct, pctTexto,
-    data, ddmm, ddmmaa, diaSemana, escapar, normalizar, faixa, iniciar, linha,
+    data, ddmm, ddmmaa, diaSemana, escapar, normalizar, faixa, iniciar, linha, api,
   };
 })();

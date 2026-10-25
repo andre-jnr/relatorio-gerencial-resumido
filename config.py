@@ -29,3 +29,4 @@ TRANSF_CFOPS = _lista("TRANSF_CFOPS") or ["5.152", "5.409", "5.557", "5.552"]
 CONTAS_EXCLUIDAS = _lista("CONTAS_EXCLUIDAS")
 # caminho relativo é a partir da pasta do projeto
 PLANILHA_CLASSIFICACAO = str(RAIZ / os.getenv("PLANILHA_CLASSIFICACAO", "dados/classificacao_pagamentos.xlsx"))
+PROVISOES_DB = str(RAIZ / os.getenv("PROVISOES_DB", "dados/provisoes.db"))

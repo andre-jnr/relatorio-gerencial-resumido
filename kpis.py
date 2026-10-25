@@ -10,12 +10,15 @@ Regras (as mesmas do Painel Gerencial):
   Vendas         = SUM(Venda.Valor_Final), Cancelada = 'N'
   Transferências = SUM(Fiscal_NF.Total_NF), NFe AUTORIZADA, CFOPs de TRANSF_CFOPS
   Contas         = Contas_Pagar sem Data_Exclusao e fora das CONTAS_EXCLUIDAS
+  Provisões      = lançadas na aba Provisões; as pendentes somam nas contas previstas
+                   (mês da data prevista) e nos pagamentos do próximo mês
 """
 import calendar
 from datetime import date, datetime, timedelta
 
 import config
 import db
+import provisoes
 
 
 def _normalizar(texto):
@@ -119,11 +122,15 @@ def calcular(ano, mes):
     finally:
         db.fechar(conn)
 
+    # provisões pendentes (lançadas à mão na aba Provisões)
+    prov, prov_qtde = provisoes.total_pendente(p["ini"], p["fim"])
+    prov_prox, prov_prox_qtde = provisoes.total_pendente(p["fim"], p["prox_fim"])
+
     faturamento = v["vendas"] + v["transf"]
     media_dia = v["vendas"] / p["dias_decorridos"] if p["dias_decorridos"] else 0.0
     projecao = media_dia * p["dias_mes"]
     resultado = faturamento - v["pagas"]
-    previstas = v["pagas"] + v["vencidas"] + v["a_pagar"]
+    previstas = v["pagas"] + v["vencidas"] + v["a_pagar"] + prov
     previsao_fat = projecao + v["transf"]
     resultado_prev = previsao_fat - previstas
 
@@ -155,6 +162,8 @@ def calcular(ano, mes):
             "contas_vencidas": v["vencidas"],
             "vencidas_meses_anteriores": v["vencidas_anteriores"],
             "contas_a_pagar": v["a_pagar"],
+            "provisoes": prov,
+            "provisoes_qtde": prov_qtde,
             "contas_previstas": previstas,
         },
         "resultado_geral": {
@@ -162,7 +171,9 @@ def calcular(ano, mes):
             "previsao_faturamento": previsao_fat,
             "resultado_previsto": resultado_prev,
             "previsao_resultado": _pct(resultado_prev, previsao_fat),
-            "pagamentos_proximo_mes": v["proximo_mes"],
+            "pagamentos_proximo_mes": v["proximo_mes"] + prov_prox,
+            "provisoes_proximo_mes": prov_prox,
+            "provisoes_proximo_mes_qtde": prov_prox_qtde,
         },
         "loja": config.LOJA_NOME,
         "atualizado_em": datetime.now().isoformat(timespec="seconds"),

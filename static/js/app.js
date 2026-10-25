@@ -18,6 +18,7 @@
     relogio: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     lista: '<path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
     proximo: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    provisao: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/>',
   };
   const icone = (nome) => `<span class="card__icone"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[nome]}</svg></span>`;
 
@@ -86,11 +87,16 @@
             : 'Em aberto, vencidas no mês' },
         { rotulo: 'Contas a pagar do mês', valor: pg.contas_a_pagar, ico: 'relogio',
           sub: p.status === 'fechado' ? 'Mês encerrado' : 'Em aberto, a vencer até o fim do mês' },
+        { rotulo: 'Provisões pendentes', valor: pg.provisoes, ico: 'provisao',
+          sub: pg.provisoes_qtde
+            ? `${pg.provisoes_qtde} lançada${pg.provisoes_qtde > 1 ? 's' : ''} na <a class="link" href="/provisoes">aba Provisões</a>`
+            : 'Nenhuma pendente · <a class="link" href="/provisoes">lançar</a>' },
         { rotulo: 'Contas previstas', valor: pg.contas_previstas, ico: 'lista', classes: 'card--destaque',
-          sub: 'Pagas + vencidas + a pagar' },
+          sub: 'Pagas + vencidas + a pagar + provisões' },
       ]],
       ['04', 'Resultado geral', 'Previsão de fechamento do mês', [
-        { rotulo: 'Contas previstas', valor: g.contas_previstas, ico: 'lista', sub: 'Total de pagamentos do mês' },
+        { rotulo: 'Contas previstas', valor: g.contas_previstas, ico: 'lista',
+          sub: pg.provisoes ? `Inclui <b>${moedaTexto(pg.provisoes)}</b> em provisões` : 'Total de pagamentos do mês' },
         { rotulo: 'Previsão de faturamento + transferências', valor: g.previsao_faturamento, ico: 'alvo',
           sub: 'Projeção de vendas + transferências enviadas' },
         { rotulo: 'Resultado (previsão)', valor: g.resultado_previsto, ico: 'balanca',
@@ -99,7 +105,9 @@
           classes: tom(g.previsao_resultado), barra: g.previsao_resultado == null ? null : Math.abs(g.previsao_resultado) * 2.5,
           sub: 'Resultado previsto ÷ previsão de faturamento' },
         { rotulo: 'Pagamentos próximo mês', valor: g.pagamentos_proximo_mes, ico: 'proximo',
-          sub: `Em aberto com vencimento em ${nomeProx}` },
+          sub: g.provisoes_proximo_mes
+            ? `Em aberto em ${nomeProx} · inclui <b>${moedaTexto(g.provisoes_proximo_mes)}</b> em provisões`
+            : `Em aberto com vencimento em ${nomeProx}` },
       ]],
     ];
 
@@ -126,7 +134,7 @@
             ${linha('55%', 12)}${linha('75%', 28, 'margin-top:10px')}${linha('45%', 10, 'margin-top:auto')}
           </article>`).join('')}</div>
       </section>`;
-    return [5, 4, 4, 5].map(bloco).join('');
+    return [5, 4, 5, 5].map(bloco).join('');
   }
 
   Comum.iniciar({ endpoint: '/api/kpis', render, esqueleto });

@@ -390,6 +390,9 @@ body {
 
 .card__sub b { font-weight: 600; color: var(--ink-2); }
 
+.link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.link:hover { text-decoration: underline; text-underline-offset: 2px; }
+
 /* destaque: total da seção */
 .card--destaque {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
@@ -437,6 +440,37 @@ body {
 }
 
 @keyframes brilho { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* painel, botão de texto e tabela com rolagem (usados nas abas) */
+.painel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.btn-texto {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: 500 13px var(--font);
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out), border-color 160ms ease, color 160ms ease;
+}
+
+.btn-texto:active { transform: scale(0.97); }
+.btn-texto:disabled { opacity: 0.6; cursor: progress; }
+.btn-texto:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-texto:hover { color: var(--ink); border-color: var(--muted); }
+}
+
+.tabela-rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 /* erro */
 .aviso {
@@ -493,6 +527,7 @@ body {
 
 @media print {
   .glow, .filtros, .abas { display: none; }
+  .painel { box-shadow: none; }
   body { background: #fff; }
   .card { box-shadow: none; break-inside: avoid; animation: none; }
 }

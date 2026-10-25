@@ -48,6 +48,7 @@
   <nav class="abas" aria-label="Páginas">
     <a href="{{ url_for('index') }}" class="aba{% if aba == 'visao' %} aba--ativa{% endif %}"{% if aba == 'visao' %} aria-current="page"{% endif %}>Visão geral</a>
     <a href="{{ url_for('pagina_pagamentos') }}" class="aba{% if aba == 'pagamentos' %} aba--ativa{% endif %}"{% if aba == 'pagamentos' %} aria-current="page"{% endif %}>Pagamentos</a>
+    <a href="{{ url_for('pagina_provisoes') }}" class="aba{% if aba == 'provisoes' %} aba--ativa{% endif %}"{% if aba == 'provisoes' %} aria-current="page"{% endif %}>Provisões</a>
   </nav>
 
   <div class="faixa-periodo">

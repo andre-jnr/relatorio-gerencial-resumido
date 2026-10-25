@@ -14,9 +14,11 @@ from flask import Flask, jsonify, render_template, request
 import config
 import kpis
 import pagamentos
+import provisoes
 
 app = Flask(__name__)
 log = logging.getLogger("relatorio")
+provisoes.iniciar_banco()
 
 _cache = {}
 _trava = threading.Lock()
@@ -57,15 +59,27 @@ def pagina_pagamentos():
     return _pagina("pagamentos.html", "pagamentos")
 
 
-def _responder(calculo):
+@app.get("/provisoes")
+def pagina_provisoes():
+    return _pagina("provisoes.html", "provisoes")
+
+
+def _ano_mes(origem):
+    """(ano, mes) validados, ou None."""
     hoje = date.today()
     try:
-        ano = int(request.args.get("ano", hoje.year))
-        mes = int(request.args.get("mes", hoje.month))
-        if not (2000 <= ano <= hoje.year + 1 and 1 <= mes <= 12):
-            raise ValueError
-    except ValueError:
+        ano = int(origem.get("ano", hoje.year))
+        mes = int(origem.get("mes", hoje.month))
+    except (TypeError, ValueError):
+        return None
+    return (ano, mes) if 2000 <= ano <= hoje.year + 1 and 1 <= mes <= 12 else None
+
+
+def _responder(calculo):
+    periodo = _ano_mes(request.args)
+    if not periodo:
         return jsonify(erro="Mês ou ano inválido."), 400
+    ano, mes = periodo
 
     try:
         return jsonify(_com_cache(calculo, ano, mes, request.args.get("atualizar") == "1"))
@@ -82,6 +96,57 @@ def api_kpis():
 @app.get("/api/pagamentos")
 def api_pagamentos():
     return _responder(pagamentos.calcular)
+
+
+# ---------- Provisões (SQLite local) ----------
+def _limpar_cache_kpis():
+    # os KPIs somam as provisões pendentes: depois de mudar uma, recalcula
+    with _trava:
+        for chave in [c for c in _cache if c[0] == kpis.calcular.__module__]:
+            del _cache[chave]
+
+
+def _alteracao(funcao):
+    try:
+        resposta = funcao()
+    except provisoes.ErroValidacao as e:
+        return jsonify(erro=str(e)), 400
+    _limpar_cache_kpis()
+    return resposta
+
+
+@app.get("/api/provisoes")
+def api_provisoes():
+    periodo = _ano_mes(request.args)
+    if not periodo:
+        return jsonify(erro="Mês ou ano inválido."), 400
+    return jsonify(provisoes.resumo(*periodo))
+
+
+@app.post("/api/provisoes")
+def api_provisoes_criar():
+    return _alteracao(lambda: (jsonify(provisoes.criar(request.get_json(silent=True) or {})), 201))
+
+
+@app.patch("/api/provisoes/<int:id_>")
+def api_provisoes_alterar(id_):
+    def alterar():
+        item = provisoes.atualizar(id_, request.get_json(silent=True) or {})
+        return jsonify(item) if item else (jsonify(erro="Provisão não encontrada."), 404)
+    return _alteracao(alterar)
+
+
+@app.delete("/api/provisoes/<int:id_>")
+def api_provisoes_excluir(id_):
+    return _alteracao(lambda: ("", 204) if provisoes.excluir(id_) else (jsonify(erro="Provisão não encontrada."), 404))
+
+
+@app.post("/api/provisoes/copiar")
+def api_provisoes_copiar():
+    periodo = _ano_mes(request.get_json(silent=True) or {})
+    if not periodo:
+        return jsonify(erro="Mês ou ano inválido."), 400
+    return _alteracao(lambda: jsonify(provisoes.copiar_mes_anterior(*periodo)))
 
 
 if __name__ == "__main__":

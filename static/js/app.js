@@ -19,6 +19,7 @@
     lista: '<path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
     proximo: '<path d="M5 12h14M13 6l6 6-6 6"/>',
     provisao: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/>',
+    presente: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
   };
   const icone = (nome) => `<span class="card__icone"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[nome]}</svg></span>`;
 
@@ -99,6 +100,10 @@
           sub: pg.provisoes ? `Inclui <b>${moedaTexto(pg.provisoes)}</b> em provisões` : 'Total de pagamentos do mês' },
         { rotulo: 'Previsão de faturamento + transferências', valor: g.previsao_faturamento, ico: 'alvo',
           sub: 'Projeção de vendas + transferências enviadas' },
+        { rotulo: 'Bonificações', valor: g.bonificacoes, ico: 'presente',
+          sub: g.bonificacoes_notas
+            ? `${g.bonificacoes_notas} nota${g.bonificacoes_notas > 1 ? 's' : ''} de bonificação recebida${g.bonificacoes_notas > 1 ? 's' : ''} de ${faixa}`
+            : `Nenhuma nota de bonificação em ${faixa}` },
         { rotulo: 'Resultado (previsão)', valor: g.resultado_previsto, ico: 'balanca',
           classes: `card--destaque ${tom(g.resultado_previsto)}`, sub: 'Previsão de faturamento − contas previstas' },
         { rotulo: 'Previsão do resultado', valor: g.previsao_resultado, tipo: 'pct', ico: 'pct',
@@ -134,7 +139,7 @@
             ${linha('55%', 12)}${linha('75%', 28, 'margin-top:10px')}${linha('45%', 10, 'margin-top:auto')}
           </article>`).join('')}</div>
       </section>`;
-    return [5, 4, 5, 5].map(bloco).join('');
+    return [5, 4, 5, 6].map(bloco).join('');
   }
 
   Comum.iniciar({ endpoint: '/api/kpis', render, esqueleto });

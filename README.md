@@ -86,6 +86,7 @@ Cada mês fica 5 minutos em cache (`CACHE_MINUTOS`). O botão de atualizar consu
 | --- | --- |
 | Contas previstas | Mesmo valor acima |
 | Previsão de faturamento + transferências | Projeção de faturamento + transferências enviadas |
+| Bonificações | `SUM(Entrada_Produto_Itens.Valor_Total)` dos itens com CFOP em `BONIF_CFOPS` (1.910 e 2.910), pela data de entrada da nota, do dia 1 até D-1. É informativo e não entra no resultado |
 | Resultado (previsão) | Previsão de faturamento + transferências − contas previstas |
 | Previsão do resultado | Resultado (previsão) ÷ previsão de faturamento + transferências |
 | Pagamentos próximo mês | Em aberto, com vencimento no mês seguinte, + provisões pendentes do mês seguinte |

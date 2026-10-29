@@ -10,6 +10,8 @@ Regras (as mesmas do Painel Gerencial):
   Vendas         = SUM(Venda.Valor_Final), Cancelada = 'N'
   Transferências = SUM(Fiscal_NF.Total_NF), NFe AUTORIZADA, CFOPs de TRANSF_CFOPS
   Contas         = Contas_Pagar sem Data_Exclusao e fora das CONTAS_EXCLUIDAS
+  Bonificações   = SUM(Entrada_Produto_Itens.Valor_Total) com CFOP de BONIF_CFOPS, por Data_Entrada
+                   (informativo: não entra no resultado)
   Provisões      = lançadas na aba Provisões; as pendentes somam nas contas previstas
                    (mês da data prevista) e nos pagamentos do próximo mês
 """
@@ -94,6 +96,15 @@ def _consultar(conn, p):
         WHERE ISNULL(cp.Pago, 'N') <> 'S' AND cp.Data_Exclusao IS NULL AND {contas_sql}
           AND cp.Data_Vencimento >= ? AND cp.Data_Vencimento < ?"""
 
+    # bonificações recebidas: itens das notas de entrada com CFOP de bonificação, pela data de entrada
+    bonif_cfops = ", ".join("?" for _ in config.BONIF_CFOPS)
+    sql_bonif = f"""
+        SELECT SUM(i.Valor_Total)
+        FROM Entrada_Produto_Itens i
+        INNER JOIN Entrada_Produto e ON e.Chave = i.Chave
+        WHERE i.CFOP IN ({bonif_cfops}) AND e.Data_Entrada >= ? AND e.Data_Entrada < ?"""
+    sql_bonif_notas = sql_bonif.replace("SUM(i.Valor_Total)", "COUNT(DISTINCT i.Chave)")
+
     q = lambda sql, *par: db.valor(conn, sql, par)
     dia = dt(p["dia_anterior"]) if p["dia_anterior"] else corte
     # vencidas antes do mês selecionado (num mês futuro, só o que já venceu até hoje)
@@ -107,6 +118,8 @@ def _consultar(conn, p):
         "vencidas_anteriores": q(sql_abertas, *contas_par, datetime(2000, 1, 1), limite_anteriores),
         "a_pagar": q(sql_abertas, *contas_par, corte, fim),
         "proximo_mes": q(sql_abertas, *contas_par, fim, prox_fim),
+        "bonificacoes": q(sql_bonif, *config.BONIF_CFOPS, ini, corte),
+        "bonificacoes_notas": int(q(sql_bonif_notas, *config.BONIF_CFOPS, ini, corte)),
     }
 
 
@@ -169,6 +182,8 @@ def calcular(ano, mes):
         "resultado_geral": {
             "contas_previstas": previstas,
             "previsao_faturamento": previsao_fat,
+            "bonificacoes": v["bonificacoes"],
+            "bonificacoes_notas": v["bonificacoes_notas"],
             "resultado_previsto": resultado_prev,
             "previsao_resultado": _pct(resultado_prev, previsao_fat),
             "pagamentos_proximo_mes": v["proximo_mes"] + prov_prox,

@@ -24,6 +24,7 @@ CACHE_MINUTOS = float(os.getenv("CACHE_MINUTOS", "5"))
 LOJA_NOME = os.getenv("LOJA_NOME", "Morada do Sol")
 GERENTE_NOME = os.getenv("GERENTE_NOME", "")
 TRANSF_CFOPS = _lista("TRANSF_CFOPS") or ["5.152", "5.409", "5.557", "5.552"]
+BONIF_CFOPS = _lista("BONIF_CFOPS") or ["1.910", "2.910"]
 CONTAS_EXCLUIDAS = _lista("CONTAS_EXCLUIDAS")
 # caminho relativo é a partir da pasta do projeto
 PLANILHA_CLASSIFICACAO = str(RAIZ / os.getenv("PLANILHA_CLASSIFICACAO", "dados/classificacao_pagamentos.xlsx"))

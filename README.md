@@ -46,17 +46,20 @@ Todas as páginas e a API exigem login. O nome do usuário aparece no topo do pa
 Os usuários ficam em `dados/usuarios.db` (SQLite, fora do Git). A senha é guardada só em hash, nunca em texto. O cadastro é feito no terminal, na pasta do sistema:
 
 ```bash
-python usuarios.py criar             # pede login, nome exibido no painel e senha (mínimo 8 caracteres)
+python usuarios.py criar             # pede login, nome exibido no painel e senha
+python usuarios.py criar --admin     # o mesmo, criando um superusuário
 python usuarios.py senha <login>     # troca a senha
-python usuarios.py listar            # mostra os usuários e o último acesso
+python usuarios.py listar            # mostra os usuários, o tipo e o último acesso
 python usuarios.py remover <login>   # pede confirmação
 ```
 
+- A senha tem **exatamente 6 dígitos**, só números. Na tela de login, o celular abre o teclado numérico.
 - O login não diferencia maiúsculas e minúsculas.
+- O superusuário fica marcado no cadastro (coluna `admin`), mas por enquanto vê o mesmo que os outros usuários.
 - A sessão dura `SESSAO_HORAS` horas (padrão 12). Depois disso, o sistema pede login de novo e volta para a página em que você estava.
 - A `SECRET_KEY` do `.env` assina o cookie da sessão. Sem ela, todos precisam entrar de novo a cada reinício do servidor. Se ela for trocada, todas as sessões abertas caem.
 - Depois de 5 senhas erradas em 15 minutos, aquele computador fica bloqueado por 15 minutos. Tentativas recusadas ficam registradas em `logs\servidor.log`.
-- O acesso é por HTTP na rede interna, então use senhas que não sejam usadas em outros sistemas.
+- O acesso é por HTTP na rede interna, então use senhas que não sejam usadas em outros sistemas. Uma senha de 6 dígitos tem 1 milhão de combinações, e o bloqueio por tentativas é o que impede quem tenta adivinhar.
 
 ## Período
 

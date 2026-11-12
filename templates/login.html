@@ -44,9 +44,9 @@
       </label>
 
       <label class="campo">
-        <span class="campo__rotulo">Senha</span>
+        <span class="campo__rotulo">Senha <em>(6 dígitos)</em></span>
         <span class="login__senha">
-          <input name="senha" type="password" autocomplete="current-password" required {% if login_digitado %}autofocus{% endif %}>
+          <input name="senha" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="current-password" required {% if login_digitado %}autofocus{% endif %}>
           <button type="button" class="login__olho" id="mostrar-senha" aria-label="Mostrar senha" aria-pressed="false">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
@@ -70,6 +70,8 @@
         botao.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
         senha.focus();
       });
+      // só números na senha
+      senha.addEventListener('input', () => { senha.value = senha.value.replace(/\D/g, '').slice(0, 6); });
       // evita enviar duas vezes
       document.querySelector('.login__cartao').addEventListener('submit', (e) => {
         const b = e.target.querySelector('.login__entrar');

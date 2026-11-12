@@ -40,7 +40,8 @@
 .login__cartao input:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
 
 .login__senha { position: relative; display: block; }
-.login__senha input { padding-right: 48px; }
+.login__senha input { padding-right: 48px; letter-spacing: 0.3em; font-variant-numeric: tabular-nums; }
+.login__cartao .campo__rotulo em { font-style: normal; font-weight: 500; text-transform: none; letter-spacing: 0; }
 
 .login__olho {
   position: absolute;

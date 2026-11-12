@@ -4,22 +4,115 @@ Local:     python app.py              (só este computador; --dev liga a recarga
 Servidor:  python app.py --producao   (Waitress em 0.0.0.0, acessível pela rede)
 """
 import logging
+import secrets
 import socket
 import sys
 import threading
 import time
-from datetime import date
+from datetime import date, timedelta
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, g, jsonify, redirect, render_template, request, session, url_for
 
 import config
 import kpis
 import pagamentos
 import provisoes
+import usuarios
 
 app = Flask(__name__)
 log = logging.getLogger("relatorio")
 provisoes.iniciar_banco()
+usuarios.iniciar_banco()
+
+if not config.SECRET_KEY:
+    log.warning("SECRET_KEY não definida no .env: as sessões caem a cada reinício do servidor.")
+app.config.update(
+    SECRET_KEY=config.SECRET_KEY or secrets.token_hex(32),
+    SESSION_COOKIE_NAME="gerencial_sessao",
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=config.SESSAO_HORAS),
+)
+
+
+# ---------- Login ----------
+TENTATIVAS_MAX = 5
+BLOQUEIO_SEG = 15 * 60
+_falhas = {}  # ip -> [horários das falhas recentes]
+_trava_falhas = threading.Lock()
+
+ROTAS_LIVRES = {"login", "static"}
+
+
+def _bloqueado(ip):
+    agora = time.time()
+    with _trava_falhas:
+        recentes = [t for t in _falhas.get(ip, []) if agora - t < BLOQUEIO_SEG]
+        _falhas[ip] = recentes
+        return len(recentes) >= TENTATIVAS_MAX
+
+
+def _registrar_falha(ip):
+    with _trava_falhas:
+        _falhas.setdefault(ip, []).append(time.time())
+
+
+def _destino_seguro(destino):
+    # só caminhos deste site (evita redirecionar para outro endereço)
+    return destino if destino and destino.startswith("/") and not destino.startswith("//") else url_for("index")
+
+
+@app.before_request
+def exigir_login():
+    if request.endpoint in ROTAS_LIVRES:
+        return None
+    usuario = usuarios.buscar(session["usuario_id"]) if "usuario_id" in session else None
+    if not usuario:
+        session.clear()
+        if request.path.startswith("/api/"):
+            return jsonify(erro="Sua sessão expirou. Entre de novo."), 401
+        return redirect(url_for("login", proximo=request.full_path.rstrip("?")))
+    g.usuario = usuario
+    return None
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    erro = None
+    login_digitado = ""
+    if request.method == "POST":
+        ip = request.remote_addr or "?"
+        login_digitado = request.form.get("login", "").strip()
+        if _bloqueado(ip):
+            erro = "Muitas tentativas erradas. Aguarde 15 minutos e tente de novo."
+        else:
+            usuario = usuarios.autenticar(login_digitado, request.form.get("senha", ""))
+            if usuario:
+                session.clear()
+                session.permanent = True
+                session["usuario_id"] = usuario["id"]
+                log.info("Login de '%s' a partir de %s", usuario["login"], ip)
+                return redirect(_destino_seguro(request.form.get("proximo")))
+            _registrar_falha(ip)
+            log.warning("Login recusado para '%s' a partir de %s", login_digitado, ip)
+            erro = "Usuário ou senha incorretos."
+    elif "usuario_id" in session and usuarios.buscar(session["usuario_id"]):
+        return redirect(url_for("index"))
+
+    return render_template(
+        "login.html",
+        loja=config.LOJA_NOME,
+        erro=erro,
+        login_digitado=login_digitado,
+        proximo=request.values.get("proximo", ""),
+        sem_usuarios=not usuarios.existe_algum(),
+    ), (401 if erro else 200)
+
+
+@app.post("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 _cache = {}
 _trava = threading.Lock()
@@ -44,7 +137,7 @@ def _pagina(template, aba):
         template,
         aba=aba,
         loja=config.LOJA_NOME,
-        gerente=config.GERENTE_NOME,
+        usuario=g.usuario,
         ano_atual=hoje.year,
         mes_atual=hoje.month,
     )

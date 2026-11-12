@@ -86,6 +86,11 @@ window.Comum = (() => {
     try { localStorage.setItem('tema', novo); } catch (e) { /* opcional */ }
   });
 
+  // sessão expirada: volta para o login e, depois de entrar, para esta mesma página
+  function irParaLogin() {
+    location.href = `/login?proximo=${encodeURIComponent(location.pathname)}`;
+  }
+
   // ---------- Carregamento ----------
   // pagina = { endpoint, render(json), esqueleto() }
   function iniciar(pagina) {
@@ -100,6 +105,7 @@ window.Comum = (() => {
       try {
         const qs = new URLSearchParams({ ano, mes, ...(forcar === true ? { atualizar: '1' } : {}) });
         const resp = await fetch(`${pagina.endpoint}?${qs}`);
+        if (resp.status === 401) return irParaLogin();
         const json = await resp.json();
         if (id !== pedidoAtual) return; // chegou uma resposta mais nova
         if (!resp.ok) throw new Error(json.erro || 'Erro desconhecido.');
@@ -124,6 +130,7 @@ window.Comum = (() => {
       headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) },
       body: opcoes.body ? JSON.stringify(opcoes.body) : undefined,
     });
+    if (resp.status === 401) { irParaLogin(); throw new Error('Sua sessão expirou. Entre de novo.'); }
     if (resp.status === 204) return null;
     const json = await resp.json().catch(() => ({}));
     if (!resp.ok) throw new Error(json.erro || 'Falha ao falar com o servidor.');

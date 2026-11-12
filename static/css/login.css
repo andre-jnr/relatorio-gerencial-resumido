@@ -1,0 +1,92 @@
+/* ---------- Tela de login ---------- */
+.pagina-login { display: grid; min-height: 100vh; min-height: 100dvh; place-items: center; }
+
+.login {
+  position: relative;
+  z-index: 1;
+  width: min(400px, 100% - 32px);
+  padding: 40px 0;
+  animation: entrar 420ms var(--ease-out) both;
+}
+
+.login__marca { display: grid; justify-items: center; gap: 6px; margin-bottom: 26px; text-align: center; }
+.login__marca .sol { width: 52px; height: 52px; margin-bottom: 10px; }
+
+.login__cartao {
+  display: grid;
+  gap: 16px;
+  padding: 28px 26px 26px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-hover);
+}
+
+.login__cartao h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.login__sub { margin: -10px 0 4px; font-size: 13.5px; color: var(--muted); }
+
+.login__cartao input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 400 16px var(--font); /* 16px evita zoom no celular */
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.login__cartao input:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+.login__senha { position: relative; display: block; }
+.login__senha input { padding-right: 48px; }
+
+.login__olho {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.login__olho[aria-pressed="true"] { color: var(--accent); }
+.login__olho:focus-visible { outline: 2px solid var(--accent); }
+
+@media (hover: hover) and (pointer: fine) {
+  .login__olho:hover { color: var(--ink); background: var(--line); }
+}
+
+.login__entrar { height: 46px; margin-top: 4px; font-size: 15px; }
+
+.login__erro, .login__aviso {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 11px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.login__erro { background: var(--neg-soft); color: var(--neg); animation: tremer 320ms var(--ease-out); }
+.login__aviso { background: var(--accent-soft); color: var(--ink-2); }
+.login__aviso code { font-size: 12.5px; padding: 1px 5px; border-radius: 5px; background: var(--line); }
+
+@keyframes tremer {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.login__rodape { margin: 18px 0 0; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .login, .login__erro { animation: none; }
+}

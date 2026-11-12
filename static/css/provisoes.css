@@ -48,27 +48,6 @@
 
 .form-erro { margin: 0 auto 0 0; font-size: 13px; color: var(--neg); }
 
-.btn-primario {
-  height: 40px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 11px;
-  background: var(--accent);
-  color: #fff;
-  font: 600 14px var(--font);
-  cursor: pointer;
-  box-shadow: 0 6px 16px -8px var(--accent);
-  transition: transform 160ms var(--ease-out), filter 160ms ease, opacity 160ms ease;
-}
-
-.btn-primario:active { transform: scale(0.97); }
-.btn-primario:disabled { opacity: 0.6; cursor: progress; }
-.btn-primario:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--accent-soft); }
-
-@media (hover: hover) and (pointer: fine) {
-  .btn-primario:hover { filter: brightness(1.06); }
-}
-
 /* lista */
 .prov-tabela { width: 100%; min-width: 720px; border-collapse: collapse; font-size: 13.5px; }
 

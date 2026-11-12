@@ -21,11 +21,15 @@ DB_TIMEOUT = int(os.getenv("DB_TIMEOUT", "60"))
 PORT = int(os.getenv("PORT", "3005"))
 CACHE_MINUTOS = float(os.getenv("CACHE_MINUTOS", "5"))
 
+# Login: SECRET_KEY assina o cookie da sessão (sem ela, todos saem a cada reinício do servidor)
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+SESSAO_HORAS = float(os.getenv("SESSAO_HORAS", "12"))
+
 LOJA_NOME = os.getenv("LOJA_NOME", "Morada do Sol")
-GERENTE_NOME = os.getenv("GERENTE_NOME", "")
 TRANSF_CFOPS = _lista("TRANSF_CFOPS") or ["5.152", "5.409", "5.557", "5.552"]
 BONIF_CFOPS = _lista("BONIF_CFOPS") or ["1.910", "2.910"]
 CONTAS_EXCLUIDAS = _lista("CONTAS_EXCLUIDAS")
 # caminho relativo é a partir da pasta do projeto
 PLANILHA_CLASSIFICACAO = str(RAIZ / os.getenv("PLANILHA_CLASSIFICACAO", "dados/classificacao_pagamentos.xlsx"))
 PROVISOES_DB = str(RAIZ / os.getenv("PROVISOES_DB", "dados/provisoes.db"))
+USUARIOS_DB = str(RAIZ / os.getenv("USUARIOS_DB", "dados/usuarios.db"))

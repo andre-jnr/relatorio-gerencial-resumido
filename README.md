@@ -8,9 +8,10 @@ Os dados são consultados ao vivo no SQL Server do SISMOURA, só com leitura.
 
 ## Como iniciar (neste computador)
 
-1. Copie `.env.example` para `.env` e preencha a conexão com o banco.
-2. Dê dois cliques em **`Iniciar Relatorio.bat`**. Na primeira vez ele instala as dependências.
-3. Acesse `http://localhost:3005`. Nesse modo, só este computador tem acesso.
+1. Copie `.env.example` para `.env`, preencha a conexão com o banco e gere a `SECRET_KEY` (o comando está no próprio arquivo).
+2. Crie seu usuário: `python usuarios.py criar` (veja [Login](#login)).
+3. Dê dois cliques em **`Iniciar Relatorio.bat`**. Na primeira vez ele instala as dependências.
+4. Acesse `http://localhost:3005` e entre com seu login. Nesse modo, só este computador tem acesso.
 
 Pelo terminal:
 
@@ -27,15 +28,35 @@ Se a porta já estiver em uso, o sistema não sobe e sai com o código 3.
 
 1. Copie a pasta do projeto para o servidor, incluindo `dados/classificacao_pagamentos.xlsx`, que fica fora do Git.
 2. Tenha o Python 3.10 ou mais novo instalado. No instalador do python.org, marque "Add python.exe to PATH".
-3. Crie o `.env` a partir do `.env.example`.
+3. Crie o `.env` a partir do `.env.example`, com uma `SECRET_KEY` nova.
 4. Clique duas vezes em `servidor\instalar.bat` e confirme o pedido de administrador.
+5. Crie os usuários com o Python do `.venv`, na pasta do sistema: `.venv\Scripts\python.exe usuarios.py criar`.
 
 O sistema sobe sozinho ao ligar o computador, pela tarefa agendada "Relatorio gerencial Lincoln (3005)", e reinicia se cair.
 O acesso fica em `http://NOME-DO-SERVIDOR:3005`, e o log em `logs\servidor.log`.
 
-- **Para atualizar:** copie os arquivos novos e rode o `instalar.bat` de novo. Não sobrescreva a pasta `dados/` do servidor, porque nela estão as provisões lançadas.
+- **Para atualizar:** copie os arquivos novos e rode o `instalar.bat` de novo. Não sobrescreva a pasta `dados/` do servidor, porque nela estão as provisões lançadas e os usuários.
 - **Para remover:** rode `servidor\desinstalar.bat`. Ele não apaga dados.
-- **Backup:** inclua `dados/provisoes.db` no backup do servidor.
+- **Backup:** inclua `dados/provisoes.db` e `dados/usuarios.db` no backup do servidor.
+
+## Login
+
+Todas as páginas e a API exigem login. O nome do usuário aparece no topo do painel ("Relatório gerencial · Lincoln"), e o botão de saída fica ao lado dos filtros.
+
+Os usuários ficam em `dados/usuarios.db` (SQLite, fora do Git). A senha é guardada só em hash, nunca em texto. O cadastro é feito no terminal, na pasta do sistema:
+
+```bash
+python usuarios.py criar             # pede login, nome exibido no painel e senha (mínimo 8 caracteres)
+python usuarios.py senha <login>     # troca a senha
+python usuarios.py listar            # mostra os usuários e o último acesso
+python usuarios.py remover <login>   # pede confirmação
+```
+
+- O login não diferencia maiúsculas e minúsculas.
+- A sessão dura `SESSAO_HORAS` horas (padrão 12). Depois disso, o sistema pede login de novo e volta para a página em que você estava.
+- A `SECRET_KEY` do `.env` assina o cookie da sessão. Sem ela, todos precisam entrar de novo a cada reinício do servidor. Se ela for trocada, todas as sessões abertas caem.
+- Depois de 5 senhas erradas em 15 minutos, aquele computador fica bloqueado por 15 minutos. Tentativas recusadas ficam registradas em `logs\servidor.log`.
+- O acesso é por HTTP na rede interna, então use senhas que não sejam usadas em outros sistemas.
 
 ## Período
 
@@ -145,6 +166,8 @@ kpis.py             consultas e cálculo dos KPIs (Visão geral)
 pagamentos.py       consultas da aba Pagamentos (plano de contas e lançamentos)
 classificacao.py    leitura da planilha do plano de contas
 provisoes.py        provisões (SQLite local): cadastro, conclusão e cópia do mês anterior
+usuarios.py         usuários do login (SQLite local) e comandos de cadastro no terminal
+templates/login.html  tela de login (static/css/login.css)
 db.py               conexão somente leitura com o SQL Server
 config.py           leitura do .env
 dados/              planilha do plano de contas e banco das provisões (fora do Git)

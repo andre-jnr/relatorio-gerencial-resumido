@@ -1,0 +1,94 @@
+/* ---------- Visão geral: botão PDF e layout de impressão ---------- */
+.btn-pdf { width: auto; grid-auto-flow: column; gap: 6px; padding: 0 12px; font: 600 13px var(--font); }
+.btn-pdf:disabled { opacity: 0.45; cursor: progress; }
+.impressao-cab { display: none; }
+
+@media print {
+  /* A4 deitado, uma página: 4 seções com até 6 cards cada */
+  @page { size: A4 landscape; margin: 9mm 10mm; }
+
+  /* sempre tema claro no papel, mesmo com o painel no escuro */
+  :root,
+  :root[data-theme="dark"],
+  :root:not([data-theme="light"]) {
+    --bg: #fff;
+    --surface: #fff;
+    --surface-2: #f7f5f1;
+    --ink: #16171b;
+    --ink-2: #44474f;
+    --muted: #767983;
+    --line: #e6e2db;
+    --line-strong: #d6d1c8;
+    --accent: #d9681f;
+    --accent-soft: #fbeadd;
+    --pos: #0f7a53;
+    --pos-soft: #e3f3ec;
+    --neg: #c03434;
+    --neg-soft: #f9e5e5;
+    color-scheme: light;
+  }
+
+  html, body { background: #fff !important; }
+  body { font-size: 9pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .topo, .abas, .faixa-periodo, .glow, .aviso-rapido { display: none !important; }
+
+  .conteudo, .rodape { width: 100%; margin: 0; }
+  .conteudo { display: block; padding: 0; }
+
+  /* cabeçalho do PDF */
+  .impressao-cab {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 8mm;
+    padding-bottom: 3.5mm;
+    margin-bottom: 4mm;
+    border-bottom: 0.6mm solid var(--accent);
+  }
+
+  .impressao-cab__marca { display: flex; align-items: center; gap: 3mm; }
+  .impressao-cab__marca .sol { width: 8mm; height: 8mm; box-shadow: none; }
+  .impressao-cab__marca p { margin: 0; font-size: 6.5pt; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .impressao-cab__marca h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 20pt; line-height: 1; }
+
+  .impressao-cab__periodo { display: grid; gap: 0.5mm; padding-left: 6mm; border-left: 0.3mm solid var(--line-strong); }
+  .impressao-cab__periodo b { font-size: 12pt; }
+  .impressao-cab__periodo span { font-size: 8pt; color: var(--ink-2); }
+
+  .impressao-cab__meta { display: grid; justify-items: end; font-size: 7.5pt; color: var(--muted); }
+
+  /* seções */
+  .secao { break-inside: avoid; margin-bottom: 4.6mm; }
+  .secao__cab { gap: 0 3mm; margin-bottom: 2mm; }
+  .secao__num { font-size: 7.5pt; }
+  .secao__titulo { font-size: 14pt; }
+  .secao__desc { font-size: 8pt; }
+
+  .grade { grid-template-columns: repeat(6, 1fr) !important; gap: 2.4mm !important; }
+
+  /* cards */
+  .card {
+    min-height: 0;
+    gap: 1.2mm;
+    padding: 3.2mm 3.4mm 3mm;
+    border-radius: 2.5mm;
+    border-color: var(--line);
+    box-shadow: none;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* rótulo com altura de 2 linhas: os valores ficam alinhados em toda a linha de cards */
+  .card__topo { min-height: 6.4mm; align-items: flex-start; }
+  .card__icone { display: none; } /* no papel o ícone só tira largura do rótulo */
+  .card__rotulo { font-size: 7.5pt; line-height: 1.25; }
+  .card__valor { margin-top: 0.8mm; font-size: 15pt; }
+  .card__sub { font-size: 7pt; line-height: 1.35; }
+  .card .barra { height: 1.2mm; }
+  .barra span { animation: none !important; }
+  .card--destaque { background: var(--accent-soft); border-color: #efc9ac; }
+  .link { color: inherit; font-weight: 600; text-decoration: none; }
+
+  .rodape { padding: 1mm 0 0; font-size: 6.5pt; border-top: 0.2mm solid var(--line); }
+}

@@ -39,6 +39,7 @@
       <button id="btn-atualizar" class="btn-icone" type="button" title="Consultar o banco de novo" aria-label="Atualizar">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
       </button>
+      {% block acoes %}{% endblock %}
       <button id="btn-tema" class="btn-icone" type="button" title="Alternar tema claro/escuro" aria-label="Alternar tema">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
@@ -69,7 +70,7 @@
     Dados do SISMOURA ({{ loja }}), consulta somente leitura. Mês em andamento considera até ontem (D-1).
   </footer>
 
-  <script>window.APP = { anoAtual: {{ ano_atual }}, mesAtual: {{ mes_atual }} };</script>
+  <script>window.APP = { anoAtual: {{ ano_atual }}, mesAtual: {{ mes_atual }}, loja: {{ loja|tojson }}, usuario: {{ usuario.nome|tojson }} };</script>
   <script src="{{ url_for('static', filename='js/comum.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>

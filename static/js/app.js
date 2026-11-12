@@ -117,11 +117,14 @@
     ];
 
     let offset = 0;
-    el.conteudo.innerHTML = secoes.map(([n, t, de, cards]) => {
+    el.conteudo.innerHTML = cabecalhoImpressao(p, temDias, faixa) + secoes.map(([n, t, de, cards]) => {
       const html = secao(n, t, de, cards, offset);
       offset += cards.length;
       return html;
     }).join('');
+
+    periodoAtual = p;
+    btnPdf.disabled = false;
 
     Comum.faixa({
       status: p.status,
@@ -130,7 +133,56 @@
     });
   }
 
+  // ---------- PDF (impressão do navegador, A4 deitado; estilos em impressao.css) ----------
+  const btnPdf = document.querySelector('#btn-pdf');
+  let periodoAtual = null;
+  const ROTULO_STATUS = { aberto: 'Mês em andamento', fechado: 'Mês fechado', futuro: 'Mês futuro' };
+
+  // só aparece no PDF: substitui o topo, os filtros e as abas
+  function cabecalhoImpressao(p, temDias, faixa) {
+    const { loja, usuario } = window.APP;
+    return `
+      <header class="impressao-cab">
+        <div class="impressao-cab__marca">
+          <span class="sol" aria-hidden="true"></span>
+          <div>
+            <p>Relatório gerencial</p>
+            <h1>${Comum.escapar(loja)}</h1>
+          </div>
+        </div>
+        <div class="impressao-cab__periodo">
+          <b>${MESES[p.mes - 1]} de ${p.ano}</b>
+          <span>${ROTULO_STATUS[p.status]} · ${temDias ? `dados de ${faixa}` : 'sem dias fechados'} · ${p.dias_decorridos} de ${p.dias_mes} dias</span>
+        </div>
+        <div class="impressao-cab__meta">
+          <span id="impressao-gerado"></span>
+          <span>por ${Comum.escapar(usuario)}</span>
+        </div>
+      </header>`;
+  }
+
+  function marcarGeracao() {
+    const gerado = document.querySelector('#impressao-gerado');
+    if (gerado) {
+      const agora = new Date();
+      gerado.textContent = `Gerado em ${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+  }
+
+  // Ctrl+P também usa o layout do PDF
+  window.addEventListener('beforeprint', marcarGeracao);
+
+  btnPdf.addEventListener('click', () => {
+    if (!periodoAtual) return;
+    // o título vira o nome sugerido do arquivo em "Salvar como PDF"
+    const titulo = document.title;
+    document.title = `Relatório gerencial - ${window.APP.loja} - ${MESES[periodoAtual.mes - 1]} ${periodoAtual.ano}`;
+    window.addEventListener('afterprint', () => { document.title = titulo; }, { once: true });
+    window.print();
+  });
+
   function esqueleto() {
+    btnPdf.disabled = true;
     const bloco = (n) => `
       <section class="secao">
         <div class="secao__cab">${linha('180px', 28)}</div>

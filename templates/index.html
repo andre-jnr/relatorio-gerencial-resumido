@@ -1,3 +1,10 @@
 {% extends "base.html" %}
 {% block titulo %}Visão geral{% endblock %}
+{% block estilos %}<link rel="stylesheet" href="{{ url_for('static', filename='css/impressao.css') }}">{% endblock %}
+{% block acoes %}
+      <button id="btn-pdf" class="btn-icone btn-pdf" type="button" title="Gerar PDF desta página" aria-label="Gerar PDF" disabled>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3"/></svg>
+        <span>PDF</span>
+      </button>
+{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}"></script>{% endblock %}

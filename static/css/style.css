@@ -528,7 +528,8 @@ body {
 @media (max-width: 640px) {
   .topo { padding-top: 24px; }
   .filtros { width: 100%; }
-  .campo { flex: 1; }
+  /* mês e ano dividem a primeira linha; os botões vão para a linha de baixo */
+  .filtros .campo { flex: 1 1 calc(50% - 5px); }
   .campo select { min-width: 0; width: 100%; }
   .faixa-periodo__hora { margin-left: 0; width: 100%; }
   .progresso { max-width: none; }

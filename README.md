@@ -118,6 +118,17 @@ Cada mês fica 5 minutos em cache (`CACHE_MINUTOS`). O botão de atualizar consu
 Todas as contas a pagar ignoram títulos excluídos (`Data_Exclusao`) e as contas contábeis listadas em `CONTAS_EXCLUIDAS`, com as mesmas regras do Painel Gerencial.
 A comparação dos nomes ignora acentos, maiúsculas e espaços.
 
+## PDF da Visão geral
+
+O botão **PDF**, ao lado dos filtros da Visão geral, abre a impressão do navegador. Em "Destino", escolha **Salvar como PDF**.
+
+- O PDF sai em uma página A4 deitada, com as 4 seções em grade de até 6 cards.
+- O topo da folha mostra a loja, o mês, a situação do período e a data e hora em que foi gerado, com o nome de quem gerou.
+- Os filtros, as abas e os botões não aparecem, e o PDF sai sempre em tema claro, mesmo com o painel no escuro.
+- O nome do arquivo sugerido é "Relatório gerencial - Morada do Sol - Outubro 2026".
+- O botão só fica ativo depois que os dados do mês carregam. O atalho Ctrl+P também usa este layout.
+- Os estilos da impressão ficam em `static/css/impressao.css`.
+
 ## Aba Pagamentos
 
 Mostra as contas pagas no período numa matriz **plano de contas → grupo → conta contábil**, comparada com o mesmo intervalo do mês anterior. O total é igual ao card "Contas pagas" da Visão geral.
@@ -179,7 +190,7 @@ static/js/comum.js  filtros, tema, formatação e carregamento compartilhados
 static/js/app.js    cards da Visão geral
 static/js/pagamentos.js  matriz da aba Pagamentos
 static/js/provisoes.js   formulário e lista da aba Provisões
-static/css/         style.css (geral), pagamentos.css e provisoes.css
+static/css/         style.css (geral), pagamentos.css, provisoes.css, login.css e impressao.css (PDF da Visão geral)
 .env.example        variáveis necessárias (sem valores reais)
 Iniciar Relatorio.bat    atalho para rodar neste computador
 servidor/           publicação no servidor Windows (config.ps1 é o único que muda entre sistemas)

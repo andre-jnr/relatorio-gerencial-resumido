@@ -1,0 +1,174 @@
+/* ---------- Aba Usuários ---------- */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.u-muted { color: var(--muted); }
+
+/* formulário */
+.u-form { padding: 20px; transition: border-color 200ms ease, box-shadow 200ms ease; }
+.u-form--editando { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+.u-form__cab h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.u-form__cab p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+.u-form__campos {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 16px 14px;
+  margin-top: 16px;
+}
+
+.u-form input:not([type="radio"]) {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 400 16px var(--font); /* 16px evita zoom no celular */
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+@media (min-width: 641px) { .u-form input:not([type="radio"]) { font-size: 14.5px; } }
+
+.u-form input::placeholder { color: var(--muted); opacity: 0.8; }
+.u-form input:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 4px var(--accent-soft); }
+.u-form input[name="senha"] { letter-spacing: 0.25em; font-variant-numeric: tabular-nums; }
+.u-form input[name="senha"]::placeholder { letter-spacing: normal; }
+
+.u-dica { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+.u-senha { display: flex; gap: 8px; }
+.u-senha .btn-texto { height: 42px; flex: none; }
+
+/* tipo de acesso: dois cartões clicáveis */
+.u-tipo {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.u-tipo legend { grid-column: 1 / -1; margin-bottom: 6px; padding: 0; }
+
+.u-opcao {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.u-opcao input { margin: 3px 0 0; accent-color: var(--accent); }
+.u-opcao span { display: grid; gap: 2px; }
+.u-opcao b { font-size: 14px; font-weight: 600; }
+.u-opcao small { font-size: 12.5px; color: var(--muted); }
+.u-opcao:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.u-opcao:has(input:focus-visible) { box-shadow: 0 0 0 4px var(--accent-soft); }
+.u-opcao:has(input:disabled) { cursor: not-allowed; opacity: 0.6; }
+
+.u-form__rodape { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.form-erro { margin: 0 auto 0 0; font-size: 13px; color: var(--neg); }
+
+/* dados do usuário recém-criado */
+.u-criado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--pos) 35%, var(--line));
+  border-radius: 14px;
+  background: var(--pos-soft);
+  font-size: 13.5px;
+  animation: entrar 300ms var(--ease-out) both;
+}
+
+.u-criado dl { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 10px 0 0; }
+.u-criado dt { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.u-criado dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+.u-criado__acoes { display: flex; gap: 6px; flex: none; }
+.u-criado[hidden] { display: none; } /* o display:flex acima anularia o atributo hidden */
+
+/* lista */
+.u-tabela { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13.5px; }
+.u-tabela th, .u-tabela td { padding: 12px 16px; text-align: left; vertical-align: middle; }
+
+.u-tabela thead th {
+  height: 44px;
+  padding-block: 0;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.u-tabela tbody tr { border-bottom: 1px solid var(--line); transition: background-color 120ms ease; }
+.u-tabela tbody tr:last-child { border-bottom: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .u-tabela tbody tr:hover { background: var(--surface-2); }
+}
+
+.u-linha--editando { background: var(--accent-soft) !important; }
+
+.u-pessoa { display: flex; align-items: center; gap: 12px; }
+
+.u-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.u-avatar--admin { background: var(--accent-soft); color: var(--accent); }
+.u-nome { display: block; font-weight: 600; color: var(--ink); }
+.u-login { display: block; font-size: 12.5px; color: var(--muted); }
+.u-voce { margin-left: 6px; padding: 1px 8px; font-size: 11px; }
+.u-selo { background: var(--line); color: var(--ink-2); }
+.u-selo-admin { background: var(--accent-soft); color: var(--accent); }
+.u-quando { white-space: nowrap; color: var(--ink-2); }
+
+.u-acoes { width: 1%; white-space: nowrap; text-align: right !important; }
+.u-acoes .btn-texto + .btn-texto { margin-left: 6px; }
+.u-excluir:disabled { opacity: 0.4; cursor: not-allowed; }
+.u-excluir--confirmar { border-color: var(--neg); background: var(--neg-soft); color: var(--neg); }
+
+@media (hover: hover) and (pointer: fine) {
+  .u-excluir:not(:disabled):hover { color: var(--neg); border-color: var(--neg); }
+}
+
+.u-falha { margin: 0; padding: 20px; color: var(--neg); }
+
+@media (max-width: 860px) {
+  .u-form__campos { grid-template-columns: 1fr 1fr; }
+  .u-form__campos > .campo:first-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .u-form__campos, .u-tipo { grid-template-columns: 1fr; }
+  .u-criado { flex-direction: column; }
+  .u-form__rodape { flex-wrap: wrap; }
+  .form-erro { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-criado { animation: none; }
+}

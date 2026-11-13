@@ -30,7 +30,7 @@ Se a porta já estiver em uso, o sistema não sobe e sai com o código 3.
 2. Tenha o Python 3.10 ou mais novo instalado. No instalador do python.org, marque "Add python.exe to PATH".
 3. Crie o `.env` a partir do `.env.example`, com uma `SECRET_KEY` nova.
 4. Clique duas vezes em `servidor\instalar.bat` e confirme o pedido de administrador.
-5. Crie os usuários com o Python do `.venv`, na pasta do sistema: `.venv\Scripts\python.exe usuarios.py criar`.
+5. Crie o primeiro superusuário com o Python do `.venv`, na pasta do sistema: `.venv\Scripts\python.exe usuarios.py criar --admin`. Os outros usuários ele cadastra pela aba **Usuários**.
 
 O sistema sobe sozinho ao ligar o computador, pela tarefa agendada "Relatorio gerencial Lincoln (3005)", e reinicia se cair.
 O acesso fica em `http://NOME-DO-SERVIDOR:3005`, e o log em `logs\servidor.log`.
@@ -43,7 +43,21 @@ O acesso fica em `http://NOME-DO-SERVIDOR:3005`, e o log em `logs\servidor.log`.
 
 Todas as páginas e a API exigem login. O nome do usuário aparece no topo do painel ("Relatório gerencial · Lincoln"), e o botão de saída fica ao lado dos filtros.
 
-Os usuários ficam em `dados/usuarios.db` (SQLite, fora do Git). A senha é guardada só em hash, nunca em texto. O cadastro é feito no terminal, na pasta do sistema:
+Os usuários ficam em `dados/usuarios.db` (SQLite, fora do Git). A senha é guardada só em hash, nunca em texto.
+
+### Aba Usuários (só superusuário)
+
+A aba só aparece para superusuários. A página e a API recusam qualquer outro usuário, mesmo que ele digite o endereço direto.
+
+- **Cadastrar:** informe o nome (o login é sugerido a partir dele, ex.: "Maria José Silva" vira `maria.jose`), a senha de 6 dígitos (o botão **Gerar** cria uma aleatória) e o tipo de acesso. Depois de cadastrar, aparece um quadro com o login e a senha para entregar à pessoa, com o botão **Copiar**. A senha não aparece de novo.
+- **Editar:** muda nome, login, tipo de acesso e, se a nova senha for preenchida, a senha. Senha em branco mantém a atual.
+- **Excluir:** pede um segundo clique para confirmar. Quem é excluído perde o acesso na próxima ação.
+- **Proteções:** ninguém exclui a própria conta nem tira o próprio acesso de superusuário, e o sistema nunca fica sem nenhum superusuário.
+- Toda criação, alteração e exclusão fica registrada em `logs\servidor.log`, com quem fez.
+
+### Pelo terminal
+
+O primeiro superusuário é criado no terminal, na pasta do sistema. Os comandos também servem se ninguém conseguir entrar:
 
 ```bash
 python usuarios.py criar             # pede login, nome exibido no painel e senha
@@ -55,7 +69,7 @@ python usuarios.py remover <login>   # pede confirmação
 
 - A senha tem **exatamente 6 dígitos**, só números. Na tela de login, o celular abre o teclado numérico.
 - O login não diferencia maiúsculas e minúsculas.
-- O superusuário fica marcado no cadastro (coluna `admin`), mas por enquanto vê o mesmo que os outros usuários.
+- O superusuário vê tudo o que os outros usuários veem, mais a aba Usuários.
 - A sessão dura `SESSAO_HORAS` horas (padrão 12). Depois disso, o sistema pede login de novo e volta para a página em que você estava.
 - A `SECRET_KEY` do `.env` assina o cookie da sessão. Sem ela, todos precisam entrar de novo a cada reinício do servidor. Se ela for trocada, todas as sessões abertas caem.
 - Depois de 5 senhas erradas em 15 minutos, aquele computador fica bloqueado por 15 minutos. Tentativas recusadas ficam registradas em `logs\servidor.log`.
@@ -184,7 +198,8 @@ kpis.py             consultas e cálculo dos KPIs (Visão geral)
 pagamentos.py       consultas da aba Pagamentos (plano de contas e lançamentos)
 classificacao.py    leitura da planilha do plano de contas
 provisoes.py        provisões (SQLite local): cadastro, conclusão e cópia do mês anterior
-usuarios.py         usuários do login (SQLite local) e comandos de cadastro no terminal
+usuarios.py         usuários do login (SQLite local), regras da aba Usuários e comandos de cadastro no terminal
+templates/usuarios.html  aba Usuários (static/js/usuarios.js e static/css/usuarios.css)
 templates/login.html  tela de login (static/css/login.css)
 db.py               conexão somente leitura com o SQL Server
 config.py           leitura do .env

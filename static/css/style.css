@@ -210,10 +210,16 @@ body {
   gap: 4px;
   margin-top: 24px;
   border-bottom: 1px solid var(--line);
+  overflow-x: auto;           /* no celular, as abas rolam em vez de quebrar linha */
+  scrollbar-width: none;
 }
+
+.abas::-webkit-scrollbar { display: none; }
 
 .aba {
   position: relative;
+  flex: none;
+  white-space: nowrap;
   padding: 10px 14px 12px;
   color: var(--muted);
   font-size: 14px;
@@ -294,6 +300,7 @@ body {
 
 /* ---------- Seções ---------- */
 .conteudo { display: grid; gap: 40px; padding: 36px 0 24px; }
+.conteudo > * { min-width: 0; } /* tabela larga rola dentro do painel, não alarga a página */
 
 .secao__cab {
   display: flex;
@@ -470,7 +477,8 @@ body {
   .btn-texto:hover { color: var(--ink); border-color: var(--muted); }
 }
 
-.tabela-rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* position: relative mantém textos ocultos (.sr) do cabeçalho dentro da área que rola */
+.tabela-rolagem { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 .btn-primario {
   height: 40px;
@@ -494,6 +502,33 @@ body {
 }
 
 .form-sair { display: contents; }
+
+/* aviso rápido (canto inferior) */
+.aviso-rapido {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms var(--ease-out);
+}
+
+.aviso-rapido--erro { background: var(--neg); color: #fff; }
+.aviso-rapido--visivel { opacity: 1; transform: translate(-50%, 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-rapido { transition: opacity 200ms ease; transform: translate(-50%, 0); }
+}
 
 /* erro */
 .aviso {

@@ -1,6 +1,6 @@
 """Usuários do relatório (SQLite local, senha só em hash).
 
-Cadastro pelo terminal, na pasta do projeto (no servidor, use o Python do .venv):
+O superusuário cadastra pela aba Usuários do painel. Também dá para usar o terminal, na pasta do projeto (no servidor, use o Python do .venv):
   python usuarios.py criar             pede login, nome e senha
   python usuarios.py criar --admin     o mesmo, como superusuário
   python usuarios.py senha <login>     troca a senha
@@ -92,21 +92,90 @@ def buscar(id_):
     return {**dict(u), "admin": bool(u["admin"])} if u else None
 
 
-def criar(login, nome, senha, admin=False):
+def _validar_login(login):
     login = (login or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9._-]{2,30}", login):
+        raise ErroUsuario("O login precisa ter de 2 a 30 caracteres: letras sem acento, números, ponto, hífen ou _.")
+    return login
+
+
+def _validar_nome(nome):
     nome = " ".join((nome or "").split())
-    if not login or not nome or " " in login:
-        raise ErroUsuario("Informe login (sem espaços) e nome.")
+    if not 1 <= len(nome) <= 60:
+        raise ErroUsuario("Informe o nome (até 60 caracteres).")
+    return nome
+
+
+def criar(login, nome, senha, admin=False):
+    login, nome = _validar_login(login), _validar_nome(nome)
     if not senha_valida(senha):
         raise ErroUsuario(f"A senha precisa ter exatamente {DIGITOS_SENHA} dígitos.")
     try:
         with _sessao() as conn:
-            conn.execute(
+            cur = conn.execute(
                 "INSERT INTO usuarios (login, nome, senha_hash, admin, criado_em) VALUES (?, ?, ?, ?, ?)",
                 (login, nome, generate_password_hash(senha), 1 if admin else 0, _agora()),
             )
+            return cur.lastrowid
     except sqlite3.IntegrityError:
         raise ErroUsuario(f"O login '{login}' já existe.")
+
+
+# ---------- Aba Usuários (só superusuário) ----------
+def listar():
+    with _sessao() as conn:
+        linhas = conn.execute(
+            "SELECT id, login, nome, admin, criado_em, ultimo_login FROM usuarios ORDER BY nome COLLATE NOCASE"
+        ).fetchall()
+    return [{**dict(u), "admin": bool(u["admin"])} for u in linhas]
+
+
+def _qtde_admins(conn):
+    return conn.execute("SELECT COUNT(*) FROM usuarios WHERE admin = 1").fetchone()[0]
+
+
+def atualizar(id_, quem, nome=None, login=None, senha=None, admin=None):
+    """Altera só os campos informados. quem = id de quem está alterando (protege a própria conta)."""
+    campos = {}
+    if nome is not None:
+        campos["nome"] = _validar_nome(nome)
+    if login is not None:
+        campos["login"] = _validar_login(login)
+    if senha is not None:
+        if not senha_valida(senha):
+            raise ErroUsuario(f"A senha precisa ter exatamente {DIGITOS_SENHA} dígitos.")
+        campos["senha_hash"] = generate_password_hash(senha)
+    if admin is not None:
+        if id_ == quem and not admin:
+            raise ErroUsuario("Você não pode tirar o seu próprio acesso de superusuário.")
+        campos["admin"] = 1 if admin else 0
+    if not campos:
+        raise ErroUsuario("Nada para alterar.")
+    try:
+        with _sessao() as conn:
+            atual = conn.execute("SELECT admin FROM usuarios WHERE id = ?", (id_,)).fetchone()
+            if not atual:
+                return False
+            if atual["admin"] and campos.get("admin") == 0 and _qtde_admins(conn) <= 1:
+                raise ErroUsuario("Precisa existir pelo menos um superusuário.")
+            sets = ", ".join(f"{c} = ?" for c in campos)
+            conn.execute(f"UPDATE usuarios SET {sets} WHERE id = ?", (*campos.values(), id_))
+            return True
+    except sqlite3.IntegrityError:
+        raise ErroUsuario(f"O login '{campos.get('login')}' já existe.")
+
+
+def remover(id_, quem):
+    if id_ == quem:
+        raise ErroUsuario("Você não pode excluir a sua própria conta.")
+    with _sessao() as conn:
+        atual = conn.execute("SELECT admin FROM usuarios WHERE id = ?", (id_,)).fetchone()
+        if not atual:
+            return False
+        if atual["admin"] and _qtde_admins(conn) <= 1:
+            raise ErroUsuario("Precisa existir pelo menos um superusuário.")
+        conn.execute("DELETE FROM usuarios WHERE id = ?", (id_,))
+        return True
 
 
 # ---------- Terminal ----------

@@ -243,6 +243,67 @@ def api_provisoes_copiar():
     return _alteracao(lambda: jsonify(provisoes.copiar_mes_anterior(*periodo)))
 
 
+# ---------- Usuários (só superusuário) ----------
+@app.get("/usuarios")
+def pagina_usuarios():
+    if not g.usuario["admin"]:
+        return redirect(url_for("index"))
+    return _pagina("usuarios.html", "usuarios")
+
+
+def _so_admin(funcao):
+    """Executa a ação da API se quem pediu é superusuário; erros de cadastro viram 400."""
+    if not g.usuario["admin"]:
+        return jsonify(erro="Só o superusuário pode gerenciar usuários."), 403
+    try:
+        return funcao()
+    except usuarios.ErroUsuario as e:
+        return jsonify(erro=str(e)), 400
+
+
+def _dados_usuario():
+    d = request.get_json(silent=True) or {}
+    return {c: d[c] for c in ("nome", "login", "senha", "admin") if c in d}
+
+
+@app.get("/api/usuarios")
+def api_usuarios():
+    return _so_admin(lambda: jsonify(usuarios=usuarios.listar(), eu=g.usuario["id"]))
+
+
+@app.post("/api/usuarios")
+def api_usuarios_criar():
+    def criar():
+        d = _dados_usuario()
+        id_ = usuarios.criar(d.get("login"), d.get("nome"), d.get("senha"), bool(d.get("admin")))
+        log.info("'%s' criou o usuário '%s'", g.usuario["login"], d.get("login"))
+        return jsonify(id=id_), 201
+    return _so_admin(criar)
+
+
+@app.patch("/api/usuarios/<int:id_>")
+def api_usuarios_alterar(id_):
+    def alterar():
+        d = _dados_usuario()
+        if "admin" in d:
+            d["admin"] = bool(d["admin"])
+        if not usuarios.atualizar(id_, g.usuario["id"], **d):
+            return jsonify(erro="Usuário não encontrado."), 404
+        log.info("'%s' alterou o usuário %s (%s)", g.usuario["login"], id_, ", ".join(sorted(d)))
+        return jsonify(ok=True)
+    return _so_admin(alterar)
+
+
+@app.delete("/api/usuarios/<int:id_>")
+def api_usuarios_excluir(id_):
+    def excluir():
+        if not usuarios.remover(id_, g.usuario["id"]):
+            return jsonify(erro="Usuário não encontrado."), 404
+        log.info("'%s' excluiu o usuário %s", g.usuario["login"], id_)
+        return "", 204
+    return _so_admin(excluir)
+
+
 PORTA_OCUPADA = 3  # código de saída usado por servidor/iniciar.ps1 para não ficar tentando de novo
 
 

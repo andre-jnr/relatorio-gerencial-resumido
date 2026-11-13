@@ -156,29 +156,6 @@
 .vazio-prov p + p { color: var(--muted); font-size: 13.5px; }
 .vazio-prov .btn-texto { margin-top: 14px; }
 
-/* aviso rápido (canto inferior) */
-.aviso-rapido {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  z-index: 20;
-  max-width: calc(100% - 32px);
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: var(--ink);
-  color: var(--bg);
-  font-size: 13.5px;
-  font-weight: 500;
-  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.45);
-  opacity: 0;
-  transform: translate(-50%, 8px);
-  pointer-events: none;
-  transition: opacity 200ms ease, transform 200ms var(--ease-out);
-}
-
-.aviso-rapido--erro { background: var(--neg); color: #fff; }
-.aviso-rapido--visivel { opacity: 1; transform: translate(-50%, 0); }
-
 @media (max-width: 860px) {
   .prov-form__campos { grid-template-columns: 1fr 1fr; }
   .campo--desc { grid-column: 1 / -1; }
@@ -189,10 +166,6 @@
   .prov-form__rodape { flex-wrap: wrap; }
   .form-erro { width: 100%; }
   .secao__cab--acoes #btn-copiar { margin-left: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aviso-rapido { transition: opacity 200ms ease; transform: translate(-50%, 0); }
 }
 
 @media print {

@@ -115,8 +115,12 @@ Cada mês fica 5 minutos em cache (`CACHE_MINUTOS`). O botão de atualizar consu
 | Previsão do resultado | Resultado (previsão) ÷ previsão de faturamento + transferências |
 | Pagamentos próximo mês | Em aberto, com vencimento no mês seguinte, + provisões pendentes do mês seguinte |
 
-Todas as contas a pagar ignoram títulos excluídos (`Data_Exclusao`) e as contas contábeis listadas em `CONTAS_EXCLUIDAS`, com as mesmas regras do Painel Gerencial.
+Todas as contas a pagar ignoram títulos excluídos (`Data_Exclusao`) e as contas contábeis listadas em `CONTAS_EXCLUIDAS`.
 A comparação dos nomes ignora acentos, maiúsculas e espaços.
+
+**Regras de desconsideração (iguais às do Painel Gerencial):** `CONTAS_EXCLUIDAS` recebe a mesma lista do Painel, que junta as contas `contas_excluidas_pagamentos` e `contas_ignoradas` de `config/unidades.json`. Fazem parte dela, por exemplo, empréstimos, compra de imóvel (com haveres e ITBI), distribuição de sócios, JC Garcia, contas da Loja Flores e Falcão. Quando o Painel mudar essa lista, copie-a para o `.env`.
+
+As outras regras do Painel valem só para as unidades que têm a chave correspondente no `unidades.json`, e a Morada do Sol não tem nenhuma delas. São elas: lançamentos ignorados por código, despesas dos sócios por fornecedor e observação, transferências marcadas para a Flores, observação de outra loja e fator por conta. Se o Painel passar a configurar alguma dessas regras para a `morada_do_sol`, ela precisa ser trazida para cá.
 
 ## PDF da Visão geral
 

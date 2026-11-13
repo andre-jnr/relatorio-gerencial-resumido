@@ -134,7 +134,21 @@ A comparação dos nomes ignora acentos, maiúsculas e espaços.
 
 **Regras de desconsideração (iguais às do Painel Gerencial):** `CONTAS_EXCLUIDAS` recebe a mesma lista do Painel, que junta as contas `contas_excluidas_pagamentos` e `contas_ignoradas` de `config/unidades.json`. Fazem parte dela, por exemplo, empréstimos, compra de imóvel (com haveres e ITBI), distribuição de sócios, JC Garcia, contas da Loja Flores e Falcão. Quando o Painel mudar essa lista, copie-a para o `.env`.
 
-As outras regras do Painel valem só para as unidades que têm a chave correspondente no `unidades.json`, e a Morada do Sol não tem nenhuma delas. São elas: lançamentos ignorados por código, despesas dos sócios por fornecedor e observação, transferências marcadas para a Flores, observação de outra loja e fator por conta. Se o Painel passar a configurar alguma dessas regras para a `morada_do_sol`, ela precisa ser trazida para cá.
+**Lançamentos e fornecedores ignorados (por loja):** os códigos são de cada banco, então valem só para a loja configurada no `.env`. Eles saem de todos os cards de pagamento (pagas, vencidas, a pagar, previstas e próximo mês) e da aba Pagamentos.
+
+| Variável | O que tira | Equivale no Painel | Ponta Negra | Morada do Sol |
+| --- | --- | --- | --- | --- |
+| `LANCAMENTOS_IGNORADOS` | Lançamentos de `Contas_Pagar` pelo código | `lancamentos_ignorados` | `90097;91105;91106;91113` (terreno e cartório) | vazio |
+| `FORNECEDORES_IGNORADOS` | Todos os pagamentos de um fornecedor (`Codigo_Fornecedor`) | `despesas_socios.fornecedores` | `3448` (JC Participações) | vazio |
+
+Para desconsiderar um pagamento novo:
+1. Ache o código na aba **Pagamentos**, abrindo a conta.
+2. Acrescente o código em `LANCAMENTOS_IGNORADOS`.
+3. Reinicie o sistema. No servidor, rode o `servidor\instalar.bat` de novo.
+
+Um valor que não seja número impede o sistema de subir, e a mensagem aparece em `logs\servidor.log`.
+
+As outras regras do Painel (despesas dos sócios pela observação, transferências marcadas para a Flores, observação de outra loja e fator por conta) não existem aqui. Elas valem só para Parque Dez, Flores e CD.
 
 ## PDF da Visão geral
 

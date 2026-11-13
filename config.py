@@ -29,6 +29,20 @@ LOJA_NOME = os.getenv("LOJA_NOME", "Morada do Sol")
 TRANSF_CFOPS = _lista("TRANSF_CFOPS") or ["5.152", "5.409", "5.557", "5.552"]
 BONIF_CFOPS = _lista("BONIF_CFOPS") or ["1.910", "2.910"]
 CONTAS_EXCLUIDAS = _lista("CONTAS_EXCLUIDAS")
+
+
+def _codigos(nome):
+    """Lista de códigos numéricos (separados por ;). Um valor inválido impede o sistema de subir."""
+    try:
+        return [int(x) for x in _lista(nome)]
+    except ValueError:
+        raise SystemExit(f"ERRO no .env: {nome} aceita só números separados por ; (ex.: 90097;91105)")
+
+
+# Lançamentos de Contas_Pagar (Codigo) e fornecedores (Codigo_Fornecedor) fora dos pagamentos.
+# Os códigos são de cada banco: valem só para a loja configurada neste .env.
+LANCAMENTOS_IGNORADOS = _codigos("LANCAMENTOS_IGNORADOS")
+FORNECEDORES_IGNORADOS = _codigos("FORNECEDORES_IGNORADOS")
 # caminho relativo é a partir da pasta do projeto
 PLANILHA_CLASSIFICACAO = str(RAIZ / os.getenv("PLANILHA_CLASSIFICACAO", "dados/classificacao_pagamentos.xlsx"))
 PROVISOES_DB = str(RAIZ / os.getenv("PROVISOES_DB", "dados/provisoes.db"))

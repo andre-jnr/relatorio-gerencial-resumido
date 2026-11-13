@@ -29,15 +29,20 @@ def _normalizar(texto):
 
 
 def filtro_contas():
-    """Trecho WHERE que tira as contas contábeis excluídas (precisa do alias cc)."""
+    """Trecho WHERE com as regras de desconsideração (precisa dos aliases cp e cc):
+    contas contábeis excluídas, lançamentos ignorados por código e fornecedores ignorados."""
+    partes, params = [], []
     nomes = [_normalizar(n) for n in config.CONTAS_EXCLUIDAS]
-    if not nomes:
-        return "1 = 1", []
-    marcas = ", ".join("?" for _ in nomes)
-    return (
-        f"REPLACE(ISNULL(cc.Descricao, ''), ' ', '') COLLATE Latin1_General_CI_AI NOT IN ({marcas})",
-        nomes,
-    )
+    if nomes:
+        marcas = ", ".join("?" for _ in nomes)
+        partes.append(f"REPLACE(ISNULL(cc.Descricao, ''), ' ', '') COLLATE Latin1_General_CI_AI NOT IN ({marcas})")
+        params += nomes
+    # códigos já validados como inteiros em config.py
+    if config.LANCAMENTOS_IGNORADOS:
+        partes.append(f"cp.Codigo NOT IN ({', '.join(map(str, config.LANCAMENTOS_IGNORADOS))})")
+    if config.FORNECEDORES_IGNORADOS:
+        partes.append(f"ISNULL(cp.Codigo_Fornecedor, 0) NOT IN ({', '.join(map(str, config.FORNECEDORES_IGNORADOS))})")
+    return (" AND ".join(partes) or "1 = 1"), params
 
 
 def dt(d):
